@@ -331,14 +331,7 @@ export default function AddProduct() {
 
 
       
-<input
-  type="number"
-  step="0.01"
-  placeholder="Discounted"
-  value={discount}
-  onChange={(e) => setDiscount(e.target.value)}
-  className="w-full border p-2 mb-4"
-/>
+
 
 
 
@@ -369,6 +362,16 @@ export default function AddProduct() {
 
       {/* Stock Input (only for 1 item) */}
       {productType === 'single' && (
+        <>
+        <input
+  type="number"
+  step="0.01"
+  placeholder="Discounted"
+  value={discount}
+  onChange={(e) => setDiscount(e.target.value)}
+  className="w-full border p-2 mb-4"
+/>
+
         <input
           type="number"
           placeholder="Stock"
@@ -378,6 +381,7 @@ export default function AddProduct() {
           className="w-full border p-2 mb-4"
           required
         />
+        </>
       )}
 
       {/* Color Select with Qty Inputs (only for collection) */}

@@ -549,11 +549,7 @@ const handleSubmit = (e) => {
         <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border p-2 mb-2" />
 
       </div> */}
-      <div className="mt-4">
-        <label className="text-sm font-bold">Discount</label>
-        <input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} className="w-full border p-2 mb-2" />
 
-      </div>
 
 
 
@@ -593,6 +589,12 @@ const handleSubmit = (e) => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
 
         {type === "single" && (
+          <>
+                <div className="mt-4">
+        <label className="text-sm font-bold">Discount</label>
+        <input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} className="w-full border p-2 mb-2" />
+
+      </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Stock</label>
             <input
@@ -603,6 +605,7 @@ const handleSubmit = (e) => {
               required
             />
           </div>
+          </>
         )}
 
       </div>
