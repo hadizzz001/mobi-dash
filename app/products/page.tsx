@@ -319,7 +319,7 @@ export default function AddProduct() {
 
 
 
-      <input
+      {/* <input
         type="number"
         step="0.01"
         placeholder="Price"
@@ -327,11 +327,11 @@ export default function AddProduct() {
         onChange={(e) => setPrice(e.target.value)}
         className="w-full border p-2 mb-4"
         required
-      /> 
+      />  */}
 
 
       
-{/* <input
+<input
   type="number"
   step="0.01"
   placeholder="Discounted"
@@ -339,7 +339,7 @@ export default function AddProduct() {
   onChange={(e) => setDiscount(e.target.value)}
   className="w-full border p-2 mb-4"
 />
-*/}
+
 
 
  

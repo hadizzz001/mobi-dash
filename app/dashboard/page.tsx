@@ -544,16 +544,16 @@ const handleSubmit = (e) => {
 
 
 
-      <div className="mt-4">
+      {/* <div className="mt-4">
         <label className="text-sm font-bold">Price</label>
         <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border p-2 mb-2" />
 
-      </div>
-      {/* <div className="mt-4">
+      </div> */}
+      <div className="mt-4">
         <label className="text-sm font-bold">Discount</label>
         <input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} className="w-full border p-2 mb-2" />
 
-      </div> */}
+      </div>
 
 
 
