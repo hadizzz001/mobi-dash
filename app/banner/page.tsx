@@ -2,26 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import Upload from '../components/Upload';
-import { redirect, useRouter } from 'next/navigation';
 
 const ManageCategory = () => {
-  const [formData, setFormData] = useState({ img: [] });
-  const [editFormData, setEditFormData] = useState({ id: '', img: [] });
+  const [img, setImg] = useState([]);
   const [message, setMessage] = useState('');
-  const [categories, setCategories] = useState([]);
-  const [img, setImg] = useState([]); 
-  const [editMode, setEditMode] = useState(false);
-  const router = useRouter();
 
-  // Fetch all banners
-  const fetchCategories = async () => {
+  // Fixed ID
+  const bannerId = '68fcd8b821e83092245e1485';
+
+  // Fetch current banner to show
+  const [banner, setBanner] = useState(null);
+
+  const fetchBanner = async () => {
     try {
       const res = await fetch('/api/banner', { method: 'GET' });
       if (res.ok) {
         const data = await res.json();
-        setCategories(data);
+        const found = data.find((b) => b.id === bannerId);
+        setBanner(found);
       } else {
-        console.error('Failed to fetch banners');
+        console.error('Failed to fetch banner');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -29,176 +29,67 @@ const ManageCategory = () => {
   };
 
   useEffect(() => {
-    fetchCategories();
+    fetchBanner();
   }, []);
 
-  // Add banner
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const res = await fetch('/api/banner', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
-    });
-
-    if (res.ok) {
-      setMessage('Banner added successfully!');
-      setFormData({ img: [] });
-      fetchCategories();
-      window.location.href = '/banner';
-    } else {
-      const errorData = await res.json();
-      setMessage(`Error: ${errorData.error}`);
-    }
+  // Handle image change
+  const handleImgChange = (url) => {
+    if (url) setImg(url);
   };
 
-  // Edit banner
-  const handleEdit = (category) => {
-    setEditMode(true);
-    setEditFormData({
-      id: category.id,
-      img: category.img,
-    });
-    setImg(category.img);
-  };
-
+  // Submit patch update for this specific ID
   const handleEditSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await fetch(`/api/banner?id=${encodeURIComponent(editFormData.id)}`, {
+      const res = await fetch(`/api/banner?id=${bannerId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          img: img,
-        }),
+        body: JSON.stringify({ img }),
       });
 
       if (res.ok) {
-        window.location.reload();
-        setEditFormData({ id: '', img: [] });
-        setEditMode(false);
-        fetchCategories();
+        setMessage('Banner updated successfully!');
+        fetchBanner();
       } else {
         const errorData = await res.json();
         setMessage(`Error: ${errorData.error}`);
       }
     } catch (error) {
       console.error('Error:', error);
-      setMessage('An error occurred while updating the Banner.');
+      setMessage('An error occurred while updating the banner.');
     }
   };
-
-  // Delete banner
-  const handleDelete = async (id) => {
-    if (confirm(`Are you sure you want to delete this Banner?`)) {
-      try {
-        const res = await fetch(`/api/banner?id=${encodeURIComponent(id)}`, {
-          method: 'DELETE',
-        });
-        if (res.ok) {
-          setMessage('Banner deleted successfully!');
-          fetchCategories();
-          redirect('/banner');
-        } else {
-          const errorData = await res.json();
-          setMessage(`Error: ${errorData.error}`);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    }
-  };
-
-  const handleImgChange = (url) => {
-    if (url) {
-      setImg(url);
-    }
-  };
-
-  useEffect(() => {
-    if (!img.includes('')) {
-      setFormData((prevState) => ({ ...prevState, img }));
-    }
-  }, [img]);
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">
-        {editMode ? 'Edit Banner' : 'Add Banner'}
-      </h1>
+      <h1 className="text-2xl font-bold mb-4">Update Banner</h1>
 
-      <form onSubmit={editMode ? handleEditSubmit : handleSubmit} className="space-y-4">
+      <form onSubmit={handleEditSubmit} className="space-y-4">
         <Upload onFilesUpload={handleImgChange} />
         <button type="submit" className="bg-blue-500 text-white px-4 py-2">
-          {editMode ? 'Update Banner' : 'Add Banner'}
+          Update Banner
         </button>
       </form>
 
       {message && <p className="mt-4">{message}</p>}
 
-      <h2 className="text-xl font-bold mt-8">All Banners</h2>
-      <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
-        <thead>
-          <tr>
-            <th className="border border-gray-300 p-2">Image</th>
-            <th className="border border-gray-300 p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {categories.length > 0 ? (
-            categories.map((category) => {
-              const fileUrl = category.img[0];
-              const isVideo = /\.(mp4|webm|ogg)$/i.test(fileUrl);
-              return (
-                <tr key={category.id}>
-                  <td className="border border-gray-300 p-2">
-                    {isVideo ? (
-                      <video controls className="w-24 h-auto">
-                        <source src={fileUrl} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    ) : (
-                      <img src={fileUrl} alt="Banner" className="w-24 h-auto" />
-                    )}
-                  </td>
-                  <td className="border border-gray-300 p-2 text-center">
-                    <button
-                      onClick={() => handleEdit(category)}
-                      className="bg-yellow-500 text-white px-4 py-1 rounded mr-2"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(category.id)}
-                      className="bg-red-500 text-white px-4 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              );
-            })
+      {banner && (
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-2">Current Banner</h2>
+          {banner.img && banner.img.length > 0 ? (
+            /\.(mp4|webm|ogg)$/i.test(banner.img[0]) ? (
+              <video controls className="w-40">
+                <source src={banner.img[0]} type="video/mp4" />
+              </video>
+            ) : (
+              <img src={banner.img[0]} alt="Banner" className="w-40 h-auto" />
+            )
           ) : (
-            <tr>
-              <td colSpan={2} className="border border-gray-300 p-2 text-center">
-                No banners found.
-              </td>
-            </tr>
+            <p>No image found.</p>
           )}
-        </tbody>
-      </table>
-
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            .uploadcare--widget {
-              background: black;
-            }
-          `,
-        }}
-      />
+        </div>
+      )}
     </div>
   );
 };

@@ -288,7 +288,7 @@ export default function AddProduct() {
         className="w-full border p-2 mb-4"
         required
       >
-        <option value="" disabled>Select a category</option>
+        <option value="" disabled>Select a Sub-Category</option>
         {subcategoryOptions.map((category) => (
           <option key={category.id} value={category.name}>
             {category.name}
@@ -296,14 +296,14 @@ export default function AddProduct() {
         ))}
       </select>
       
-      <label className="block text-lg font-bold mb-2">Factory</label>
+      <label className="block text-lg font-bold mb-2">Brand</label>
       <select
         value={selectedFactory}
         onChange={(e) => setSelectedFactory(e.target.value)}
         className="w-full border p-2 mb-4"
         required
       >
-        <option value="" disabled>Select a category</option>
+        <option value="" disabled>Select a Brand</option>
         {factoryOptions.map((category) => (
           <option key={category.id} value={category.name}>
             {category.name}
@@ -319,7 +319,7 @@ export default function AddProduct() {
 
 
 
-      {/* <input
+      <input
         type="number"
         step="0.01"
         placeholder="Price"
@@ -327,7 +327,7 @@ export default function AddProduct() {
         onChange={(e) => setPrice(e.target.value)}
         className="w-full border p-2 mb-4"
         required
-      /> */}
+      /> 
 
 
       
@@ -338,20 +338,15 @@ export default function AddProduct() {
   value={discount}
   onChange={(e) => setDiscount(e.target.value)}
   className="w-full border p-2 mb-4"
-/> */}
+/>
+*/}
 
 
-
-
-
-
-
-
-      {/* Product Type Radio */}
+ 
       <div className="mb-4">
         <label className="block text-lg font-bold mb-2">Product Type</label>
         <div className="flex space-x-4">
-          {/* <label className="flex items-center space-x-2">
+          <label className="flex items-center space-x-2">
             <input
               type="radio"
               value="single"
@@ -359,7 +354,7 @@ export default function AddProduct() {
               onChange={() => setProductType('single')}
             />
             <span>1 Item</span>
-          </label> */}
+          </label>
           <label className="flex items-center space-x-2">
             <input
               type="radio"

@@ -543,13 +543,13 @@ const handleSubmit = (e) => {
 
 
 
-{/* 
+
       <div className="mt-4">
         <label className="text-sm font-bold">Price</label>
         <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border p-2 mb-2" />
 
       </div>
-      <div className="mt-4">
+      {/* <div className="mt-4">
         <label className="text-sm font-bold">Discount</label>
         <input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} className="w-full border p-2 mb-2" />
 
@@ -561,7 +561,7 @@ const handleSubmit = (e) => {
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">Product Type</label>
         <div className="flex gap-4">
-          {/* <label className="flex items-center gap-2">
+          <label className="flex items-center gap-2">
             <input
               type="radio"
               name="type"
@@ -570,7 +570,7 @@ const handleSubmit = (e) => {
               onChange={() => setType("single")}
             />
             Single
-          </label> */}
+          </label>
           <label className="flex items-center gap-2">
             <input
               type="radio"
