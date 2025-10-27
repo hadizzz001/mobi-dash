@@ -32,24 +32,28 @@ model Product {
   factory      String
   views     String?
   orders      String?
+  sort      Int?
 }
 
 model Category {
   id   String   @id @default(auto()) @map("_id") @db.ObjectId
   name String   @unique
   img  String[]
+  sort      Int?
 }
 
 model Sub {
   id   String   @id @default(auto()) @map("_id") @db.ObjectId
   name String   @unique 
   img  String[]
+  sort      Int?
 }
 
 model Factory {
   id   String   @id @default(auto()) @map("_id") @db.ObjectId
   name String   @unique
   img  String[]
+  sort      Int?
 }
 
 model Offer {

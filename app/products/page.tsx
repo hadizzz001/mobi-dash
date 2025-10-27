@@ -19,7 +19,7 @@ export default function AddProduct() {
   const [selectedsubCategory, setSelectedsubCategory] = useState('');
   const [factoryOptions, setFactoryOptions] = useState([]);
   const [selectedFactory, setSelectedFactory] = useState('');
-  const [productType, setProductType] = useState('collection');
+  const [productType, setProductType] = useState('single');
   const [selectedColors, setSelectedColors] = useState([]);
   const [colorQuantities, setColorQuantities] = useState({});
   const [colorSizes, setColorSizes] = useState({}); 
@@ -319,16 +319,6 @@ export default function AddProduct() {
 
 
 
-      {/* <input
-        type="number"
-        step="0.01"
-        placeholder="Price"
-        value={price}
-        onChange={(e) => setPrice(e.target.value)}
-        className="w-full border p-2 mb-4"
-        required
-      />  */}
-
 
       
 
@@ -363,6 +353,19 @@ export default function AddProduct() {
       {/* Stock Input (only for 1 item) */}
       {productType === 'single' && (
         <>
+              <input
+        type="number"
+        step="0.01"
+        placeholder="Price"
+        value={price}
+        onChange={(e) => setPrice(e.target.value)}
+        className="w-full border p-2 mb-4"
+        required
+      /> 
+
+
+
+
         <input
   type="number"
   step="0.01"

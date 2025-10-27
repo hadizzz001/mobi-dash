@@ -10,6 +10,7 @@ const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 export default function ProductTable() {
   const [products, setProducts] = useState([]);
+  const [products1, setProducts1] = useState([]);
   const [categories, setCategories] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -105,6 +106,40 @@ export default function ProductTable() {
 
 
 
+const handleSaveAll = async () => {
+  try {
+    // Filter only products that have a valid id
+    const updates = products
+      .filter((p) => p.id && p.sort !== undefined && p.sort !== null)
+      .map(({ id, sort }) => ({ id, sort }));
+
+    if (updates.length === 0) {
+      alert("No products to update!");
+      return;
+    }
+
+    // Run all PATCH requests in parallel
+    await Promise.all(
+      updates.map((item) =>
+        fetch(`/api/products1/${item.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sort: Number(item.sort) }),
+        })
+      )
+    );
+
+    alert("✅ All sort values saved successfully!");
+    fetchProducts(); // Refresh data after update
+  } catch (error) {
+    console.error("Error saving all:", error);
+    alert("❌ Failed to save sort values");
+  }
+};
+
+
+
+
 
   return (
     <div className="max-w-7xl mx-auto p-4 text-[12px]">
@@ -146,6 +181,15 @@ export default function ProductTable() {
 
       <ExportToExcel products={products} />
 
+          <button
+      onClick={handleSaveAll}
+      className="ml-3 px-4 py-2 bg-blue-600 text-white rounded mb-5"
+    >
+      Save Sorts
+    </button>
+
+
+
       <table className="table-auto w-full border-collapse border border-gray-200 mb-4">
         <thead>
           <tr className="bg-gray-100">
@@ -156,6 +200,7 @@ export default function ProductTable() {
             <th className="border p-2">Type</th>
             <th className="border p-2">Stock</th>
             <th className="border p-2">Colors & Qty</th>
+            <th className="border p-2">Sort</th> 
             <th className="border p-2">Actions</th>
           </tr>
         </thead>
@@ -293,6 +338,22 @@ export default function ProductTable() {
                     isCollection ? 'No colors' : '—'
                   )}
                 </td>
+
+<td className="border p-2">
+  <input
+    type="number"
+    value={product.sort || ''}
+    onChange={(e) => {
+      const updated = [...products];
+      const index = updated.findIndex((p) => p.id === product.id);
+      updated[index].sort = e.target.value;
+      setProducts(updated); // ✅ Keep sort change in main state
+    }}
+    className="border p-1 w-20"
+  />
+</td>
+
+
 
 
                 <td className="border p-2">
@@ -544,11 +605,7 @@ const handleSubmit = (e) => {
 
 
 
-      {/* <div className="mt-4">
-        <label className="text-sm font-bold">Price</label>
-        <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border p-2 mb-2" />
 
-      </div> */}
 
 
 
@@ -590,6 +647,12 @@ const handleSubmit = (e) => {
 
         {type === "single" && (
           <>
+                <div className="mt-4">
+        <label className="text-sm font-bold">Price</label>
+        <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border p-2 mb-2" />
+
+      </div>
+
                 <div className="mt-4">
         <label className="text-sm font-bold">Discount</label>
         <input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} className="w-full border p-2 mb-2" />
