@@ -195,7 +195,7 @@ const handleSaveAll = async () => {
           <tr className="bg-gray-100">
             <th className="border p-2">Title</th>
             {/* <th className="border p-2">Pic</th> */}
-            <th className="border p-2">Discount (USD)</th>
+            <th className="border p-2">Price (USD)</th>
             <th className="border p-2">Category</th>
             <th className="border p-2">Type</th>
             <th className="border p-2">Stock</th>
@@ -269,28 +269,33 @@ const handleSaveAll = async () => {
                     <img src={fileUrl} alt="Product" className="w-24 h-auto" />
                   )}
                 </td> */}
-                <td className="border p-2">
-                  {product.type === 'single' || (product.type === 'collection' && !product.color)
-                    ? (`$${product.discount}`)
-                    : (product.type === 'collection' && product.color && product.color.some(c => c.sizes?.length)
-                      ? (() => {
-                        const prices = product.color
-                          .flatMap(c => c.sizes || [])
-                          .map(s => s.price);
+<td className="border p-2">
+  {product.type === 'single' || (product.type === 'collection' && !product.color)
+    ? (
+      product.discount && product.discount > 0
+        ? `$${product.discount}`
+        : `$${product.price}`
+    )
+    : (product.type === 'collection' && product.color && product.color.some(c => c.sizes?.length)
+      ? (() => {
+          const prices = product.color
+            .flatMap(c => c.sizes || [])
+            .map(s => s.price);
 
-                        if (prices.length === 0) return product.discount;
+          if (prices.length === 0) return `$${product.price}`;
 
-                        const minPrice = Math.min(...prices);
-                        const maxPrice = Math.max(...prices);
+          const minPrice = Math.min(...prices);
+          const maxPrice = Math.max(...prices);
 
-                        return minPrice === maxPrice
-                          ? `$${minPrice.toFixed(2)}`
-                          : `$${minPrice.toFixed(2)} - $${maxPrice.toFixed(2)}`;
-                      })()
-                      : `$${product.discount}`
-                    )
-                  }
-                </td>
+          return minPrice === maxPrice
+            ? `$${minPrice.toFixed(2)}`
+            : `$${minPrice.toFixed(2)} - $${maxPrice.toFixed(2)}`;
+        })()
+      : `$${product.price}`
+    )
+  }
+</td>
+
 
                 <td className="border p-2">{product.category}</td>
                 <td className="border p-2">{product.type}</td>
@@ -476,31 +481,40 @@ function EditProductForm({ product, onCancel, onSave }) {
       }
     }
 
-    // ✅ Include code in the payload
-    onSave({
-      ...product,
-      title,
-      code, // ✅ new field
-      description,
-      price: Number(price).toFixed(2),
-      discount: Number(discount).toFixed(2),
-      img,
-      category: selectedCategory,
-      sub: selectedCategory1,
-      factory: selectedCategory2,
-      type,
-      ...(type === 'single' && { stock }),
-      ...(type === 'collection' && {
-        color: Object.entries(selectedColors).map(([colorName, data]) => ({
-          color: colorName,
-          sizes: Object.entries(data.sizes).map(([size, values]) => ({
-            size: values.size,
-            price: Number(values.price),
-            qty: Number(values.qty)
-          }))
-        }))
-      })
-    });
+// Convert percentage discount to actual discounted price
+let finalDiscountPrice = price;
+if (price && discount) {
+  const percentage = Number(discount);
+  const numericPrice = Number(price);
+  const discountedValue = numericPrice - (numericPrice * percentage / 100);
+  finalDiscountPrice = discountedValue.toFixed(2);
+}
+
+onSave({
+  ...product,
+  title,
+  code,
+  description,
+  price: Number(price).toFixed(2),
+  discount: String(finalDiscountPrice), // ✅ save as string
+  img,
+  category: selectedCategory,
+  sub: selectedCategory1,
+  factory: selectedCategory2,
+  type,
+  ...(type === 'single' && { stock }),
+  ...(type === 'collection' && {
+    color: Object.entries(selectedColors).map(([colorName, data]) => ({
+      color: colorName,
+      sizes: Object.entries(data.sizes).map(([size, values]) => ({
+        size: values.size,
+        price: Number(values.price),
+        qty: Number(values.qty)
+      }))
+    }))
+  })
+});
+
   };
 
   // Color & size logic
@@ -609,7 +623,7 @@ function EditProductForm({ product, onCancel, onSave }) {
             </div>
 
             <div className="mt-4">
-              <label className="text-sm font-bold">Discount</label>
+              <label className="text-sm font-bold">Discount %</label>
               <input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} className="w-full border p-2 mb-2" />
             </div>
 

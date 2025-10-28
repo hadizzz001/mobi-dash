@@ -169,7 +169,10 @@ export default function AddProduct() {
       code, // include in payload
       description,
       price: Number(price).toFixed(2),
-      discount: discount ? Number(discount).toFixed(2) : null,
+    discount: discount
+  ? ((Number(price) * Number(discount)) / 100).toFixed(2)
+  : null,
+
       img,
       category: selectedCategory, 
       sub: selectedsubCategory, 
