@@ -24,6 +24,8 @@ export default function AddProduct() {
   const [colorQuantities, setColorQuantities] = useState({});
   const [colorSizes, setColorSizes] = useState({}); 
   const [discount, setDiscount] = useState('');
+  const [code, setCode] = useState(''); // new code field
+
 
 
 
@@ -164,6 +166,7 @@ export default function AddProduct() {
 
     const payload = {
       title,
+      code, // include in payload
       description,
       price: Number(price).toFixed(2),
       discount: discount ? Number(discount).toFixed(2) : null,
@@ -264,6 +267,16 @@ export default function AddProduct() {
         className="w-full border p-2 mb-4"
         required
       />
+
+      <input
+  type="text"
+  placeholder="Item Code"
+  value={code}
+  onChange={(e) => setCode(e.target.value)}
+  className="w-full border p-2 mb-4"
+  required
+/>
+
 
       {/* Category Selection */}
       <label className="block text-lg font-bold mb-2">Category</label>

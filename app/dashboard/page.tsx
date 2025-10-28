@@ -385,8 +385,10 @@ const handleSaveAll = async () => {
 
 
 
+ 
 function EditProductForm({ product, onCancel, onSave }) {
   const [title, setTitle] = useState(product.title);
+  const [code, setcode] = useState(product.code); // ✅ NEW FIELD
   const [stock, setStock] = useState(product.stock || "0");
   const [img, setImg] = useState(product.img || []);
   const [description, setDescription] = useState(product.description);
@@ -399,8 +401,6 @@ function EditProductForm({ product, onCancel, onSave }) {
   const [selectedCategory1, setSelectedCategory1] = useState(product.sub || "");
   const [categories2, setCategories2] = useState([]);
   const [selectedCategory2, setSelectedCategory2] = useState(product.factory || "");
-
-
 
   const availableColors = ["black", "white", "red", "yellow", "blue", "green", "orange", "purple", "brown", "gray", "pink"];
 
@@ -415,6 +415,7 @@ function EditProductForm({ product, onCancel, onSave }) {
     return initial;
   });
 
+  // Fetch category options
   useEffect(() => {
     const fetchOptions = async () => {
       try {
@@ -424,100 +425,85 @@ function EditProductForm({ product, onCancel, onSave }) {
         console.error("Error fetching categories:", error);
       }
     };
-
     fetchOptions();
   }, []);
+
   useEffect(() => {
     const fetchOptions = async () => {
       try {
         const categoriesRes = await fetch("/api/sub");
         setCategories1(await categoriesRes.json());
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching subcategories:", error);
       }
     };
-
     fetchOptions();
   }, []);
+
   useEffect(() => {
     const fetchOptions = async () => {
       try {
         const categoriesRes = await fetch("/api/factory");
         setCategories2(await categoriesRes.json());
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching factories:", error);
       }
     };
-
     fetchOptions();
   }, []);
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-
-
-
-
-const handleSubmit = (e) => {
-  e.preventDefault();
-
-  // ✅ Validation for collection type
-  if (type === "collection") {
-    for (const [colorName, data] of Object.entries(selectedColors)) {
-      const { sizes } = data;
-
-      // Force at least 1 size
-      if (!sizes || Object.keys(sizes).length === 0) {
-        alert(`Color "${colorName}" must have at least 1 size`);
-        return;
-      }
-
-      // Check each size has price & qty
-      for (const [sizeName, sizeData] of Object.entries(sizes)) {
-        if (!sizeData.price || sizeData.price <= 0) {
-          alert(`Size "${sizeName}" of color "${colorName}" must have a valid price`);
+    // ✅ Validation for collection type
+    if (type === "collection") {
+      for (const [colorName, data] of Object.entries(selectedColors)) {
+        const { sizes } = data;
+        if (!sizes || Object.keys(sizes).length === 0) {
+          alert(`Color "${colorName}" must have at least 1 size`);
           return;
         }
-        if (!sizeData.qty || sizeData.qty <= 0) {
-          alert(`Size "${sizeName}" of color "${colorName}" must have a valid quantity`);
-          return;
+        for (const [sizeName, sizeData] of Object.entries(sizes)) {
+          if (!sizeData.price || sizeData.price <= 0) {
+            alert(`Size "${sizeName}" of color "${colorName}" must have a valid price`);
+            return;
+          }
+          if (!sizeData.qty || sizeData.qty <= 0) {
+            alert(`Size "${sizeName}" of color "${colorName}" must have a valid quantity`);
+            return;
+          }
         }
       }
     }
-  }
 
-  // ✅ If validation passes, continue saving
-  onSave({
-    ...product,
-    title,
-    description,
-    price: Number(price).toFixed(2),
-    discount: Number(discount).toFixed(2),
-    img,
-    category: selectedCategory,
-    sub: selectedCategory1,
-    factory: selectedCategory2,
-    type,
-    ...(type === 'single' && { stock: stock }),
-    ...(type === 'collection' && {
-      color: Object.entries(selectedColors).map(([colorName, data]) => {
-        return {
+    // ✅ Include code in the payload
+    onSave({
+      ...product,
+      title,
+      code, // ✅ new field
+      description,
+      price: Number(price).toFixed(2),
+      discount: Number(discount).toFixed(2),
+      img,
+      category: selectedCategory,
+      sub: selectedCategory1,
+      factory: selectedCategory2,
+      type,
+      ...(type === 'single' && { stock }),
+      ...(type === 'collection' && {
+        color: Object.entries(selectedColors).map(([colorName, data]) => ({
           color: colorName,
           sizes: Object.entries(data.sizes).map(([size, values]) => ({
             size: values.size,
             price: Number(values.price),
             qty: Number(values.qty)
           }))
-        };
+        }))
       })
-    })
-  });
-};
+    });
+  };
 
-
-
-
-
-
+  // Color & size logic
   const toggleColor = (color) => {
     setSelectedColors((prev) => {
       if (prev[color]) {
@@ -525,10 +511,7 @@ const handleSubmit = (e) => {
         delete updated[color];
         return updated;
       } else {
-        return {
-          ...prev,
-          [color]: { qty: 1, sizes: {} }
-        };
+        return { ...prev, [color]: { qty: 1, sizes: {} } };
       }
     });
   };
@@ -536,10 +519,7 @@ const handleSubmit = (e) => {
   const updateQty = (color, qty) => {
     setSelectedColors((prev) => ({
       ...prev,
-      [color]: {
-        ...prev[color],
-        qty,
-      }
+      [color]: { ...prev[color], qty },
     }));
   };
 
@@ -547,28 +527,17 @@ const handleSubmit = (e) => {
     setSelectedColors((prev) => {
       const prevColor = prev[color] || { qty: 1, sizes: {} };
       const updatedSizes = { ...prevColor.sizes };
-
       if (remove) {
         delete updatedSizes[size];
       } else {
         updatedSizes[size] = valueObj;
       }
-
       return {
         ...prev,
-        [color]: {
-          ...prevColor,
-          qty: undefined, // hide color-level qty when using sizes
-          sizes: updatedSizes
-        }
+        [color]: { ...prevColor, qty: undefined, sizes: updatedSizes },
       };
     });
   };
-
-
-
-
-
 
   return (
     <form onSubmit={handleSubmit} className="text-[12px] border p-4 bg-gray-100 rounded">
@@ -577,103 +546,82 @@ const handleSubmit = (e) => {
       {/* Title */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Title</label>
-        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full border p-2" required />
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full border p-2"
+          required
+        />
       </div>
 
+      {/* ✅ Item Code */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700">Item Code</label>
+        <input
+          type="text"
+          value={code}
+          onChange={(e) => setcode(e.target.value)}
+          className="w-full border p-2"
+          placeholder="Enter unique item code (e.g. A1234)"
+          required
+        />
+      </div>
 
-
-
+      {/* Category Selects */}
       <select className="w-full p-2 border mb-2" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} required>
         <option value="">Select Category</option>
         {categories.map((cat) => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
       </select>
+
       <select className="w-full p-2 border mb-2" value={selectedCategory1} onChange={(e) => setSelectedCategory1(e.target.value)} required>
         <option value="">Select Sub-Category</option>
         {categories1.map((cat) => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
       </select>
+
       <select className="w-full p-2 border mb-2" value={selectedCategory2} onChange={(e) => setSelectedCategory2(e.target.value)} required>
         <option value="">Select Factory</option>
         {categories2.map((cat) => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
       </select>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      {/* Product Type */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">Product Type</label>
         <div className="flex gap-4">
           <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="type"
-              value="single"
-              checked={type === "single"}
-              onChange={() => setType("single")}
-            />
+            <input type="radio" name="type" value="single" checked={type === "single"} onChange={() => setType("single")} />
             Single
           </label>
           <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="type"
-              value="collection"
-              checked={type === "collection"}
-              onChange={() => setType("collection")}
-            />
+            <input type="radio" name="type" value="collection" checked={type === "collection"} onChange={() => setType("collection")} />
             Collection
           </label>
         </div>
       </div>
 
-
-
-
-
-
       {/* Price, Discount, Stock */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-
         {type === "single" && (
           <>
-                <div className="mt-4">
-        <label className="text-sm font-bold">Price</label>
-        <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border p-2 mb-2" />
+            <div className="mt-4">
+              <label className="text-sm font-bold">Price</label>
+              <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border p-2 mb-2" />
+            </div>
 
-      </div>
+            <div className="mt-4">
+              <label className="text-sm font-bold">Discount</label>
+              <input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} className="w-full border p-2 mb-2" />
+            </div>
 
-                <div className="mt-4">
-        <label className="text-sm font-bold">Discount</label>
-        <input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} className="w-full border p-2 mb-2" />
-
-      </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Stock</label>
-            <input
-              type="number"
-              value={stock}
-              onChange={(e) => setStock(e.target.value)}
-              className="w-full border p-2"
-              required
-            />
-          </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Stock</label>
+              <input type="number" value={stock} onChange={(e) => setStock(e.target.value)} className="w-full border p-2" required />
+            </div>
           </>
         )}
-
       </div>
 
-
+      {/* Collection colors and sizes */}
       {type === "collection" && (
         <div className="mb-6">
           <label className="block text-lg font-bold mb-2">Choose Colors</label>
@@ -686,8 +634,7 @@ const handleSubmit = (e) => {
                 <div key={color} className="p-3 border rounded-md">
                   <div className="flex items-center space-x-2 mb-2">
                     <div
-                      className={`w-6 h-6 rounded-full cursor-pointer border-2 ${isSelected ? 'ring-2 ring-offset-2 ring-black' : ''
-                        }`}
+                      className={`w-6 h-6 rounded-full cursor-pointer border-2 ${isSelected ? 'ring-2 ring-offset-2 ring-black' : ''}`}
                       style={{ backgroundColor: color }}
                       onClick={() => toggleColor(color)}
                       title={color}
@@ -697,19 +644,6 @@ const handleSubmit = (e) => {
 
                   {isSelected && (
                     <div className="ml-6 space-y-2">
-                      {/* Show quantity input if no sizes */}
-                      {/* {!hasSizes && (
-                        <input
-                          type="number"
-                          min={0}
-                          placeholder="Qty"
-                          className="border px-2 py-1 w-20"
-                          value={isSelected.qty}
-                          onChange={(e) => updateQty(color, e.target.value)}
-                        />
-                      )} */}
-
-                      {/* Add Size Button */}
                       <button
                         type="button"
                         className="bg-blue-500 text-white px-2 py-1 text-sm rounded"
@@ -721,50 +655,31 @@ const handleSubmit = (e) => {
                           }
                           updateSize(color, size, { size, qty: 1, price: '' });
                         }}
-
                       >
                         + Add Size
                       </button>
 
-                      {/* Render Sizes */}
                       {hasSizes &&
                         Object.entries(isSelected.sizes).map(([sizeName, sizeData]) => (
                           <div key={sizeName} className="flex items-center gap-2 ml-4 mt-2">
                             <span className="font-semibold">{sizeData.size}</span>
-
                             <span>Price</span>
                             <input
                               type="number"
                               placeholder="Price"
                               value={sizeData.price}
-                              onChange={(e) =>
-                                updateSize(color, sizeName, {
-                                  ...sizeData,
-                                  price: e.target.value,
-                                })
-                              }
+                              onChange={(e) => updateSize(color, sizeName, { ...sizeData, price: e.target.value })}
                               className="border px-2 py-1 w-20"
                             />
-
                             <span>Qty</span>
                             <input
                               type="number"
                               placeholder="Qty"
                               value={sizeData.qty}
-                              onChange={(e) =>
-                                updateSize(color, sizeName, {
-                                  ...sizeData,
-                                  qty: e.target.value,
-                                })
-                              }
+                              onChange={(e) => updateSize(color, sizeName, { ...sizeData, qty: e.target.value })}
                               className="border px-2 py-1 w-20"
                             />
-
-                            <button
-                              type="button"
-                              className="text-red-500 font-bold"
-                              onClick={() => updateSize(color, sizeName, null, true)} // delete
-                            >
+                            <button type="button" className="text-red-500 font-bold" onClick={() => updateSize(color, sizeName, null, true)}>
                               ✕
                             </button>
                           </div>
@@ -778,15 +693,9 @@ const handleSubmit = (e) => {
         </div>
       )}
 
-
-
-
-
-
       {/* Description */}
       <label className="block text-lg font-bold mb-2">Description</label>
       <ReactQuill value={description} onChange={setDescription} className="mb-4" theme="snow" placeholder="Write your product description here..." />
-
 
       {/* Image Upload */}
       <Upload onFilesUpload={(url) => setImg(url)} />
@@ -800,3 +709,4 @@ const handleSubmit = (e) => {
   );
 }
 
+ 

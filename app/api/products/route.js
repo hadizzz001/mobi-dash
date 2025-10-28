@@ -28,6 +28,7 @@ export async function POST(req) {
       factory,
       views,
       orders,
+      code,
     } = body;
 
     console.log("body are: ", body);
@@ -58,6 +59,7 @@ export async function POST(req) {
         factory,
         views,
         orders,
+        code,
       },
     });
 

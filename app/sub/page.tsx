@@ -2,17 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import Upload from '../components/Upload';
-import { redirect, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 const ManageCategory = () => {
-  const [formData, setFormData] = useState({ name: '' , img: [] });
+  const [formData, setFormData] = useState({ name: '', img: [] });
   const [editFormData, setEditFormData] = useState({ id: '', name: '', img: [] });
   const [message, setMessage] = useState('');
   const [categories, setCategories] = useState([]);
-  const [img, setImg] = useState([]); // Store images in an array
+  const [img, setImg] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const router = useRouter();
-  // Fetch all categories
+
+  // ✅ Fetch all subcategories
   const fetchCategories = async () => {
     try {
       const res = await fetch('/api/sub', { method: 'GET' });
@@ -20,7 +21,7 @@ const ManageCategory = () => {
         const data = await res.json();
         setCategories(data);
       } else {
-        console.error('Failed to fetch categories');
+        console.error('Failed to fetch subcategories');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -30,76 +31,66 @@ const ManageCategory = () => {
   useEffect(() => {
     fetchCategories();
   }, []);
- 
-  
 
-  // Add category
+  // ✅ Add subcategory
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const res = await fetch('/api/sub', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData),
     });
- 
-    
 
     if (res.ok) {
-      setMessage('subcategory added successfully!');
-      setFormData({ name: '',  img: [] });
+      setMessage('Subcategory added successfully!');
+      setFormData({ name: '', img: [] });
       fetchCategories();
-      window.location.href = '/sub';
-      
+      router.refresh();
     } else {
       const errorData = await res.json();
       setMessage(`Error: ${errorData.error}`);
     }
   };
 
-  // Edit category
+  // ✅ Edit subcategory
   const handleEdit = (category) => {
     setEditMode(true);
     setEditFormData({
       id: category.id,
-      name: category.name, 
+      name: category.name,
       img: category.img,
     });
-    setImg(category.img); // Populate img state with existing images for editing
+    setImg(category.img);
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const res = await fetch(`/api/sub?id=${encodeURIComponent(editFormData.id)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: editFormData.name, 
-          img: img, // Ensure the updated image state is sent
+          name: editFormData.name,
+          img: img,
         }),
       });
 
       if (res.ok) {
-        window.location.reload(); 
-        setEditFormData({ id: '', name: '' , img: [] });
+        setEditFormData({ id: '', name: '', img: [] });
         setEditMode(false);
         fetchCategories();
-        
+        router.refresh();
       } else {
-        window.location.reload();
         const errorData = await res.json();
-        setMessage(`Error: ${errorData.error}`); 
+        setMessage(`Error: ${errorData.error}`);
       }
     } catch (error) {
-      window.location.reload();
       console.error('Error:', error);
-      setMessage('An error occurred while updating the subcategory.'); 
+      setMessage('An error occurred while updating the subcategory.');
     }
   };
 
-  // Delete category
+  // ✅ Delete subcategory
   const handleDelete = async (id) => {
     if (confirm(`Are you sure you want to delete this subcategory?`)) {
       try {
@@ -107,9 +98,9 @@ const ManageCategory = () => {
           method: 'DELETE',
         });
         if (res.ok) {
-          setMessage('subcategory deleted successfully!');
+          setMessage('Subcategory deleted successfully!');
           fetchCategories();
-          redirect('/sub');
+          router.refresh();
         } else {
           const errorData = await res.json();
           setMessage(`Error: ${errorData.error}`);
@@ -120,10 +111,9 @@ const ManageCategory = () => {
     }
   };
 
+  // ✅ Handle image upload
   const handleImgChange = (url) => {
-    if (url) {
-      setImg(url); // Update img state with new image URL
-    }
+    if (url) setImg(url);
   };
 
   useEffect(() => {
@@ -132,92 +122,151 @@ const ManageCategory = () => {
     }
   }, [img]);
 
+// ✅ Save all sort updates (PATCH each subcategory individually)
+const handleSaveAllSorts = async () => {
+  try {
+    const updates = categories
+      .filter((c) => c.id && c.sort !== undefined && c.sort !== null)
+      .map(({ id, sort }) => ({ id, sort: Number(sort) }));
+
+    if (updates.length === 0) {
+      alert('No subcategories to update!');
+      return;
+    }
+
+    // ✅ Loop through each and patch individually
+    for (const { id, sort } of updates) {
+      const res = await fetch(`/api/sub1/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sort }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error(`❌ Failed for ID ${id}: ${errorData.error}`);
+      }
+    }
+
+    alert('✅ All sort values saved successfully!');
+    fetchCategories();
+  } catch (error) {
+    console.error('Error saving sorts:', error);
+    alert('❌ Failed to save sort values');
+  }
+};
+
+
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">{editMode ? 'Edit subcategory' : 'Add subcategory'}</h1>
-      <form onSubmit={editMode ? handleEditSubmit : handleSubmit} className="space-y-4">
-        <div>
-          <label className="block mb-1">Name</label>
-          <input
-            type="text"
-            className="border p-2 w-full"
-            value={editMode ? editFormData.name : formData.name}
-            onChange={(e) =>
-              editMode
-                ? setEditFormData({ ...editFormData, name: e.target.value })
-                : setFormData({ ...formData, name: e.target.value })
-            }
-            required
-          />
-        </div>
-       
-        <Upload onFilesUpload={handleImgChange} />
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2">
-          {editMode ? 'Update subcategory' : 'Add subcategory'}
-        </button>
-      </form>
-      {message && <p className="mt-4">{message}</p>}
+    <div className="container mx-auto p-4 text-[13px]">
+      <h1 className="text-2xl font-bold mb-4">{editMode ? 'Edit Subcategory' : 'Add Subcategory'}</h1>
 
-      <h2 className="text-xl font-bold mt-8">All Categories</h2>
-      <table className="table-auto border-collapse border border-gray-300 w-full mt-4">
-  <thead>
-    <tr>
-      <th className="border border-gray-300 p-2">Name</th>
-      <th className="border border-gray-300 p-2">Image</th>
-      <th className="border border-gray-300 p-2">Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {categories.length > 0 ? (
-      categories.map((category) => {
-        const fileUrl = category.img[0];
-        const isVideo = /\.(mp4|webm|ogg)$/i.test(fileUrl);
-        return (
-          <tr key={category.id}>
-            <td className="border border-gray-300 p-2">{category.name}</td>
-            <td className="border border-gray-300 p-2">
-              {isVideo ? (
-                <video controls className="w-24 h-auto">
-                  <source src={fileUrl} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              ) : (
-                <img src={fileUrl} alt="Product Image" className="w-24 h-auto" />
-              )}
-            </td>
-            <td className="border border-gray-300 p-2 text-center">
-              <button
-                onClick={() => handleEdit(category)}
-                className="bg-yellow-500 text-white px-4 py-1 rounded mr-2"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(category.id)}
-                className="bg-red-500 text-white px-4 py-1 rounded"
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        );
-      })
-    ) : (
-      <tr>
-        <td colSpan={3} className="border border-gray-300 p-2 text-center">
-          No categories found.
-        </td>
-      </tr>
-    )}
-  </tbody>
-</table>
-
-      <style
-          dangerouslySetInnerHTML={{
-            __html:
-              "\n  .uploadcare--widget {\n    background:black;\n  }\n  ",
-          }}
+      {/* ✅ ADD / EDIT FORM */}
+      <form onSubmit={editMode ? handleEditSubmit : handleSubmit} className="mb-8 space-y-4">
+        <input
+          type="text"
+          placeholder="Subcategory Name"
+          value={editMode ? editFormData.name : formData.name}
+          onChange={(e) =>
+            editMode
+              ? setEditFormData({ ...editFormData, name: e.target.value })
+              : setFormData({ ...formData, name: e.target.value })
+          }
+          required
+          className="border p-2 w-full"
         />
+
+        <Upload onFilesUpload={handleImgChange} />
+
+        <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">
+          {editMode ? 'Update Subcategory' : 'Add Subcategory'}
+        </button>
+        {editMode && (
+          <button
+            type="button"
+            onClick={() => {
+              setEditMode(false);
+              setEditFormData({ id: '', name: '', img: [] });
+            }}
+            className="bg-gray-500 text-white px-4 py-2 rounded ml-2"
+          >
+            Cancel
+          </button>
+        )}
+      </form>
+
+      {/* ✅ SORT SAVE BUTTON */}
+      <div className="mb-4 flex justify-end">
+        <button
+          onClick={handleSaveAllSorts}
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          Save Sorts
+        </button>
+      </div>
+
+      {/* ✅ SUBCATEGORY TABLE */}
+      <table className="table-auto w-full border-collapse border border-gray-300">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="border p-2 text-left">Image</th>
+            <th className="border p-2 text-left">Name</th>
+            <th className="border p-2 text-left">Sort</th>
+            <th className="border p-2 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {categories.map((category) => (
+            <tr key={category.id}>
+              <td className="border p-2">
+                {category.img && category.img.length > 0 ? (
+                  <img
+                    src={category.img[0]}
+                    alt={category.name}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                ) : (
+                  '—'
+                )}
+              </td>
+              <td className="border p-2">{category.name}</td>
+
+              {/* ✅ SORT FIELD */}
+              <td className="border p-2 w-20">
+                <input
+                  type="number"
+                  value={category.sort || ''}
+                  onChange={(e) => {
+                    const updated = [...categories];
+                    const index = updated.findIndex((c) => c.id === category.id);
+                    updated[index].sort = e.target.value;
+                    setCategories(updated);
+                  }}
+                  className="border p-1 w-full text-center"
+                />
+              </td>
+
+              <td className="border p-2">
+                <button
+                  onClick={() => handleEdit(category)}
+                  className="bg-yellow-500 text-white px-3 py-1 rounded mr-2"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(category.id)}
+                  className="bg-red-500 text-white px-3 py-1 rounded"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {message && <p className="mt-4 text-green-600">{message}</p>}
     </div>
   );
 };

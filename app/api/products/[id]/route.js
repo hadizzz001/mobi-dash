@@ -26,6 +26,7 @@ export async function PATCH(request, { params }) {
   date        ,
            sub,
       factory,
+      code,
   } = await request.json();
 
   console.log("imgs are: ", img);
@@ -56,6 +57,7 @@ export async function PATCH(request, { params }) {
   date        ,
                sub,
       factory,
+      code,
       },
     });
 

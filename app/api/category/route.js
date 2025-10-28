@@ -14,9 +14,9 @@ export async function GET(req) {
 
 export async function POST(req) {
   try {
-    const { name, img } = await req.json(); 
+    const { name, img , sort} = await req.json(); 
     
-    const category = await prisma.category.create({ data: { name, img } });
+    const category = await prisma.category.create({ data: { name, img, sort } });
     return new Response(JSON.stringify({ message: 'Category created successfully', category }), {
       status: 201,
     });
@@ -34,12 +34,12 @@ export async function PATCH(req) {
     const id = url.searchParams.get('id');
     if (!id) return new Response(JSON.stringify({ error: 'ID is required' }), { status: 400 });
  
-    const { name, img } = await req.json(); 
+    const { name, img, sort } = await req.json(); 
 
 
     const updatedCategory = await prisma.category.update({
       where: { id },
-      data: { name, img },
+      data: { name, img, sort },
     });
     return new Response(JSON.stringify({ message: 'Category updated successfully', updatedCategory }), {
       status: 200,
