@@ -173,8 +173,7 @@ export default function AddProduct() {
   ? ((Number(price) * Number(discount)) / 100).toFixed(2)
   : null,
 
-      img,
-      category: selectedCategory, 
+      img, 
       sub: selectedsubCategory, 
       factory: selectedFactory, 
       type: productType,
@@ -282,7 +281,7 @@ export default function AddProduct() {
 
 
       {/* Category Selection */}
-      <label className="block text-lg font-bold mb-2">Category</label>
+      {/* <label className="block text-lg font-bold mb-2">Category</label>
       <select
         value={selectedCategory}
         onChange={(e) => setSelectedCategory(e.target.value)}
@@ -295,7 +294,7 @@ export default function AddProduct() {
             {category.name}
           </option>
         ))}
-      </select>
+      </select> */}
 
       <label className="block text-lg font-bold mb-2">Sub-Category</label>
       <select

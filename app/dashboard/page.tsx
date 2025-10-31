@@ -164,7 +164,7 @@ const handleSaveAll = async () => {
       </div>
 
       {/* Category Filter */}
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
@@ -177,7 +177,7 @@ const handleSaveAll = async () => {
             </option>
           ))}
         </select>
-      </div>
+      </div> */}
 
       <ExportToExcel products={products} />
 
@@ -196,7 +196,7 @@ const handleSaveAll = async () => {
             <th className="border p-2">Title</th>
             {/* <th className="border p-2">Pic</th> */}
             <th className="border p-2">Price (USD)</th>
-            <th className="border p-2">Category</th>
+            {/* <th className="border p-2">Category</th> */}
             <th className="border p-2">Type</th>
             <th className="border p-2">Stock</th>
             <th className="border p-2">Colors & Qty</th>
@@ -296,8 +296,7 @@ const handleSaveAll = async () => {
   }
 </td>
 
-
-                <td className="border p-2">{product.category}</td>
+ 
                 <td className="border p-2">{product.type}</td>
 
                 <td className="border p-2">
@@ -497,8 +496,7 @@ onSave({
   description,
   price: Number(price).toFixed(2),
   discount: String(finalDiscountPrice), // ✅ save as string
-  img,
-  category: selectedCategory,
+  img, 
   sub: selectedCategory1,
   factory: selectedCategory2,
   type,
@@ -583,10 +581,10 @@ onSave({
       </div>
 
       {/* Category Selects */}
-      <select className="w-full p-2 border mb-2" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} required>
+      {/* <select className="w-full p-2 border mb-2" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} required>
         <option value="">Select Category</option>
         {categories.map((cat) => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
-      </select>
+      </select> */}
 
       <select className="w-full p-2 border mb-2" value={selectedCategory1} onChange={(e) => setSelectedCategory1(e.target.value)} required>
         <option value="">Select Sub-Category</option>

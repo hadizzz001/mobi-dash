@@ -15,7 +15,7 @@ const formatUSD = (value) => {
       if (product.type === 'single') {
         const row = {
           Title: product.title,
-          Category: product.category,
+          // Category: product.category,
           Origin: formatUSD(product.origin),
           Weight: product.weight,
           Profit: product.profit,
@@ -37,7 +37,7 @@ const formatUSD = (value) => {
             colorItem.sizes.forEach((sizeItem) => {
               const row = {
                 Title: product.title,
-                Category: product.category,
+                // Category: product.category,
                 Origin: formatUSD(product.origin),
                 Weight: product.weight,
                 Profit: product.profit,
@@ -57,7 +57,7 @@ const formatUSD = (value) => {
             // Collection with color only
             const row = {
               Title: product.title,
-              Category: product.category,
+              // Category: product.category,
               Origin: formatUSD(product.origin),
               Weight: product.weight,
               Profit: product.profit,

@@ -39,11 +39,11 @@ export default function Sidebar() {
                 Add Product
               </a>
             </li>
-            <li>
+            {/* <li>
               <a href="/category" style={{ color: "white", textDecoration: "none" }}>
                 Add Category
               </a>
-            </li>    
+            </li>     */}
             <li>
               <a href="/sub" style={{ color: "white", textDecoration: "none" }}>
                 Add Sub-category
