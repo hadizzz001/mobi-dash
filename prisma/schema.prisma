@@ -33,6 +33,7 @@ model Product {
   factory      String
   views     String?
   orders      String?
+  percentage      String?
   sort      Int?
     sale      String?   @default("no")
       noprice      String?   @default("no")

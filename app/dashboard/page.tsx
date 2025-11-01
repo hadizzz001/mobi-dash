@@ -405,6 +405,9 @@ function EditProductForm({ product, onCancel, onSave }) {
   const [selectedCategory1, setSelectedCategory1] = useState(product.sub || "");
   const [categories2, setCategories2] = useState([]);
   const [selectedCategory2, setSelectedCategory2] = useState(product.factory || "");
+  const [discountPercentage, setDiscountPercentage] = useState(product.discount ? ((Number(product.price) - Number(product.discount)) / Number(product.price) * 100).toFixed(2) : '');
+
+
 
   const [sale, setSale] = useState(product.sale === "yes" ? true : false);
   const [noPrice, setNoPrice] = useState(product.noprice === "yes" ? true : false);
@@ -481,40 +484,45 @@ function EditProductForm({ product, onCancel, onSave }) {
       }
     }
 
-    // Convert percentage discount to actual discounted price
-    let finalDiscountPrice = price;
-    if (price && discount) {
-      const percentage = Number(discount);
-      const numericPrice = Number(price);
-      const discountedValue = numericPrice - (numericPrice * percentage / 100);
-      finalDiscountPrice = discountedValue.toFixed(2);
-    }
+ 
+// Calculate final discounted price
+let finalDiscountPrice = price;
+let percentageValue = discountPercentage || 0;
+if (price && discountPercentage) {
+  const numericPrice = Number(price);
+  const percentage = Number(discountPercentage);
+  finalDiscountPrice = (numericPrice - (numericPrice * percentage / 100)).toFixed(2);
+  percentageValue = percentage.toFixed(2);
+}
 
-    onSave({
-      ...product,
-      title,
-      code,
-      description,
-      price: Number(price).toFixed(2),
-      discount: String(finalDiscountPrice),
-      img, 
-      sub: selectedCategory1,
-      factory: selectedCategory2,
-      type,
-      sale: sale ? "yes" : "no",
-      noprice: noPrice ? "yes" : "no",
-      ...(type === 'single' && { stock }),
-      ...(type === 'collection' && {
-        color: Object.entries(selectedColors).map(([colorName, data]) => ({
-          color: colorName,
-          sizes: Object.entries(data.sizes).map(([size, values]) => ({
-            size: values.size,
-            price: Number(values.price),
-            qty: Number(values.qty)
-          }))
-        }))
-      })
-    });
+onSave({
+  ...product,
+  title,
+  code,
+  description,
+  price: Number(price).toFixed(2),
+  discount: String(finalDiscountPrice),   // store discounted price
+  percentage: percentageValue,    // store percentage explicitly
+  img, 
+  sub: selectedCategory1,
+  factory: selectedCategory2,
+  type,
+  sale: sale ? "yes" : "no",
+  noprice: noPrice ? "yes" : "no",
+  ...(type === 'single' && { stock }),
+  ...(type === 'collection' && {
+    color: Object.entries(selectedColors).map(([colorName, data]) => ({
+      color: colorName,
+      sizes: Object.entries(data.sizes).map(([size, values]) => ({
+        size: values.size,
+        price: Number(values.price),
+        qty: Number(values.qty)
+      }))
+    }))
+  })
+});
+
+
   };
 
   const toggleColor = (color) => {
@@ -551,6 +559,22 @@ function EditProductForm({ product, onCancel, onSave }) {
       };
     });
   };
+
+
+
+
+
+
+
+  // Calculate live discounted price
+const calculatedDiscountPrice = discountPercentage && price
+  ? (Number(price) - (Number(price) * Number(discountPercentage) / 100)).toFixed(2)
+  : null;
+
+
+
+
+
 
   return (
     <form onSubmit={handleSubmit} className="text-[12px] border p-4 bg-gray-100 rounded">
@@ -622,7 +646,6 @@ function EditProductForm({ product, onCancel, onSave }) {
         </div>
       </div>
 
-{/* Price, Discount, Stock for Single */}
 {type === "single" && (
   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
     {/* Price & Discount only if noprice is NOT checked */}
@@ -642,15 +665,21 @@ function EditProductForm({ product, onCancel, onSave }) {
           <label className="text-sm font-bold">Discount %</label>
           <input
             type="number"
-            value={discount}
-            onChange={(e) => setDiscount(e.target.value)}
+            value={discountPercentage}
+            onChange={(e) => setDiscountPercentage(e.target.value)}
             className="w-full border p-2 mb-2"
           />
         </div>
+
+        {calculatedDiscountPrice && (
+          <div className="mt-4 text-green-600 font-semibold">
+            Discounted Price: {calculatedDiscountPrice}
+          </div>
+        )}
       </>
     )}
 
-    {/* Stock always visible */}
+    {/* Stock input always visible */}
     <div className="mb-4">
       <label className="block text-sm font-medium text-gray-700">Stock</label>
       <input
@@ -663,6 +692,8 @@ function EditProductForm({ product, onCancel, onSave }) {
     </div>
   </div>
 )}
+
+
 
 
       {/* Collection Colors & Sizes */}

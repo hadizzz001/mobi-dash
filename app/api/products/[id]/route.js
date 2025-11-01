@@ -29,6 +29,8 @@ export async function PATCH(request, { params }) {
       code,
             sale,
       noprice,
+      percentage,
+
   } = await request.json();
 
   console.log("imgs are: ", img);
@@ -62,6 +64,7 @@ export async function PATCH(request, { params }) {
       code,
             sale,
       noprice,
+      percentage,
       },
     });
 

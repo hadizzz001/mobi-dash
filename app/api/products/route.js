@@ -31,6 +31,8 @@ export async function POST(req) {
       code,
       sale,
       noprice,
+      percentage,
+
     } = body;
 
     console.log("body are: ", body);
@@ -64,6 +66,8 @@ export async function POST(req) {
         code,
               sale,
       noprice,
+      percentage,
+
       },
     });
 

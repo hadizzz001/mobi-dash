@@ -27,6 +27,8 @@ export default function AddProduct() {
   const [code, setCode] = useState(''); // new code field
   const [sale, setSale] = useState(false);
   const [noPrice, setNoPrice] = useState(false);
+  const [percentage, setPercentage] = useState(''); // new discount percentage
+
 
 
 
@@ -166,45 +168,47 @@ export default function AddProduct() {
     }
 
 
+const discountValue = percentage
+  ? (Number(price) - (Number(price) * Number(percentage) / 100)).toFixed(2)
+  : null;
 
-    const payload = {
-      title,
-      code, // include in payload
-      description,
+const payload = {
+  title,
+  code,
+  description,
+  sale: sale ? "yes" : "no",
+  noprice: noPrice ? "yes" : "no",
+  price: Number(price).toFixed(2), // original price
+  discount: discountValue, // store price after applying percentage
+  img,
+  percentage,
+  sub: selectedsubCategory,
+  factory: selectedFactory,
+  type: productType,
+  ...(productType === 'single' && { stock }),
+  ...(productType === 'collection' && {
+    color: selectedColors.map(color => {
+      const data = colorQuantities[color] || {};
+      if (data.sizes && Object.keys(data.sizes).length > 0) {
+        return {
+          color,
+          sizes: Object.entries(data.sizes).map(([size, values]) => ({
+            size,
+            price: Number(parseFloat(values.price).toFixed(2)),
+            qty: Number(values.qty)
+          }))
+        };
+      } else {
+        return {
+          color,
+          qty: Number(data.qty || 0)
+        };
+      }
+    })
+  })
+};
 
-      sale: sale ? "yes" : "no",
-      noprice: noPrice ? "yes" : "no",
-      price: Number(price).toFixed(2),
-      discount: discount
-        ? ((Number(price) * Number(discount)) / 100).toFixed(2)
-        : null,
 
-      img,
-      sub: selectedsubCategory,
-      factory: selectedFactory,
-      type: productType,
-      ...(productType === 'single' && { stock }),
-      ...(productType === 'collection' && {
-        color: selectedColors.map(color => {
-          const data = colorQuantities[color] || {};
-          if (data.sizes && Object.keys(data.sizes).length > 0) {
-            return {
-              color,
-              sizes: Object.entries(data.sizes).map(([size, values]) => ({
-                size,
-                price: Number(parseFloat(values.price).toFixed(2)),
-                qty: Number(values.qty)
-              }))
-            };
-          } else {
-            return {
-              color,
-              qty: Number(data.qty || 0)
-            };
-          }
-        })
-      })
-    };
 
 
 
@@ -258,6 +262,11 @@ export default function AddProduct() {
   };
 
 
+
+// Calculate discounted price based on percentage
+const calculatedDiscount = percentage && price
+  ? (Number(price) - (Number(price) * Number(percentage) / 100)).toFixed(2)
+  : null;
 
 
 
@@ -401,28 +410,37 @@ export default function AddProduct() {
 {productType === 'single' && (
   <>
     {/* Show Price and Discount only if noPrice is false */}
-    {!noPrice && (
-      <>
-        <input
-          type="number"
-          step="0.01"
-          placeholder="Price"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          className="w-full border p-2 mb-4"
-          required
-        />
+{!noPrice && (
+  <>
+    <input
+      type="number"
+      step="0.01"
+      placeholder="Price"
+      value={price}
+      onChange={(e) => setPrice(e.target.value)}
+      className="w-full border p-2 mb-2"
+      required
+    />
 
-        <input
-          type="number"
-          step="0.01"
-          placeholder="Discounted"
-          value={discount}
-          onChange={(e) => setDiscount(e.target.value)}
-          className="w-full border p-2 mb-4"
-        />
-      </>
+    <input
+      type="number"
+      step="0.01"
+      placeholder="Discount %"
+      value={percentage}
+      onChange={(e) => setPercentage(e.target.value)}
+      className="w-full border p-2 mb-2"
+    />
+
+    {/* Show calculated discount */}
+    {calculatedDiscount && (
+      <span className="text-green-600 font-semibold mb-4 block">
+        Discounted Price: {calculatedDiscount}
+      </span>
     )}
+  </>
+)}
+
+
 
     {/* Stock should always show */}
     <input
