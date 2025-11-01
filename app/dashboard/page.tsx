@@ -391,8 +391,8 @@ const handleSaveAll = async () => {
 
  
 function EditProductForm({ product, onCancel, onSave }) {
-  const [title, setTitle] = useState(product.title);
-  const [code, setcode] = useState(product.code); // ✅ NEW FIELD
+   const [title, setTitle] = useState(product.title);
+  const [code, setcode] = useState(product.code);
   const [stock, setStock] = useState(product.stock || "0");
   const [img, setImg] = useState(product.img || []);
   const [description, setDescription] = useState(product.description);
@@ -406,20 +406,21 @@ function EditProductForm({ product, onCancel, onSave }) {
   const [categories2, setCategories2] = useState([]);
   const [selectedCategory2, setSelectedCategory2] = useState(product.factory || "");
 
-  const availableColors = ["black", "white", "red", "yellow", "blue", "green", "orange", "purple", "brown", "gray", "pink"];
+  const [sale, setSale] = useState(product.sale === "yes" ? true : false);
+  const [noPrice, setNoPrice] = useState(product.noprice === "yes" ? true : false);
 
+  const availableColors = ["black", "white", "red", "yellow", "blue", "green", "orange", "purple", "brown", "gray", "pink"];
   const [selectedColors, setSelectedColors] = useState(() => {
     const initial = {};
     (product.color || []).forEach(c => {
       initial[c.color] = {
         qty: c.qty || 1,
-        sizes: c.sizes || {} // { M: { qty: 2, price: 15 } }
+        sizes: c.sizes || {}
       };
     });
     return initial;
   });
 
-  // Fetch category options
   useEffect(() => {
     const fetchOptions = async () => {
       try {
@@ -459,7 +460,7 @@ function EditProductForm({ product, onCancel, onSave }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // ✅ Validation for collection type
+    // Validation for collection type
     if (type === "collection") {
       for (const [colorName, data] of Object.entries(selectedColors)) {
         const { sizes } = data;
@@ -480,42 +481,42 @@ function EditProductForm({ product, onCancel, onSave }) {
       }
     }
 
-// Convert percentage discount to actual discounted price
-let finalDiscountPrice = price;
-if (price && discount) {
-  const percentage = Number(discount);
-  const numericPrice = Number(price);
-  const discountedValue = numericPrice - (numericPrice * percentage / 100);
-  finalDiscountPrice = discountedValue.toFixed(2);
-}
+    // Convert percentage discount to actual discounted price
+    let finalDiscountPrice = price;
+    if (price && discount) {
+      const percentage = Number(discount);
+      const numericPrice = Number(price);
+      const discountedValue = numericPrice - (numericPrice * percentage / 100);
+      finalDiscountPrice = discountedValue.toFixed(2);
+    }
 
-onSave({
-  ...product,
-  title,
-  code,
-  description,
-  price: Number(price).toFixed(2),
-  discount: String(finalDiscountPrice), // ✅ save as string
-  img, 
-  sub: selectedCategory1,
-  factory: selectedCategory2,
-  type,
-  ...(type === 'single' && { stock }),
-  ...(type === 'collection' && {
-    color: Object.entries(selectedColors).map(([colorName, data]) => ({
-      color: colorName,
-      sizes: Object.entries(data.sizes).map(([size, values]) => ({
-        size: values.size,
-        price: Number(values.price),
-        qty: Number(values.qty)
-      }))
-    }))
-  })
-});
-
+    onSave({
+      ...product,
+      title,
+      code,
+      description,
+      price: Number(price).toFixed(2),
+      discount: String(finalDiscountPrice),
+      img, 
+      sub: selectedCategory1,
+      factory: selectedCategory2,
+      type,
+      sale: sale ? "yes" : "no",
+      noprice: noPrice ? "yes" : "no",
+      ...(type === 'single' && { stock }),
+      ...(type === 'collection' && {
+        color: Object.entries(selectedColors).map(([colorName, data]) => ({
+          color: colorName,
+          sizes: Object.entries(data.sizes).map(([size, values]) => ({
+            size: values.size,
+            price: Number(values.price),
+            qty: Number(values.qty)
+          }))
+        }))
+      })
+    });
   };
 
-  // Color & size logic
   const toggleColor = (color) => {
     setSelectedColors((prev) => {
       if (prev[color]) {
@@ -567,7 +568,7 @@ onSave({
         />
       </div>
 
-      {/* ✅ Item Code */}
+      {/* Item Code */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Item Code</label>
         <input
@@ -580,12 +581,22 @@ onSave({
         />
       </div>
 
-      {/* Category Selects */}
-      {/* <select className="w-full p-2 border mb-2" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} required>
-        <option value="">Select Category</option>
-        {categories.map((cat) => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
-      </select> */}
+{/* Sale & No Price Checkboxes */}
+<div className="mb-4 flex gap-4">
+  <label className="flex items-center gap-2">
+    <input type="checkbox" checked={sale} onChange={(e) => setSale(e.target.checked)} />
+    Sale
+  </label>
+  <label className="flex items-center gap-2">
+    <input type="checkbox" checked={noPrice} onChange={(e) => setNoPrice(e.target.checked)} />
+    No Price
+  </label>
+</div>
 
+ 
+
+
+      {/* Subcategory & Factory */}
       <select className="w-full p-2 border mb-2" value={selectedCategory1} onChange={(e) => setSelectedCategory1(e.target.value)} required>
         <option value="">Select Sub-Category</option>
         {categories1.map((cat) => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
@@ -611,29 +622,50 @@ onSave({
         </div>
       </div>
 
-      {/* Price, Discount, Stock */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-        {type === "single" && (
-          <>
-            <div className="mt-4">
-              <label className="text-sm font-bold">Price</label>
-              <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border p-2 mb-2" />
-            </div>
+{/* Price, Discount, Stock for Single */}
+{type === "single" && (
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+    {/* Price & Discount only if noprice is NOT checked */}
+    {!noPrice && (
+      <>
+        <div className="mt-4">
+          <label className="text-sm font-bold">Price</label>
+          <input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            className="w-full border p-2 mb-2"
+          />
+        </div>
 
-            <div className="mt-4">
-              <label className="text-sm font-bold">Discount %</label>
-              <input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} className="w-full border p-2 mb-2" />
-            </div>
+        <div className="mt-4">
+          <label className="text-sm font-bold">Discount %</label>
+          <input
+            type="number"
+            value={discount}
+            onChange={(e) => setDiscount(e.target.value)}
+            className="w-full border p-2 mb-2"
+          />
+        </div>
+      </>
+    )}
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Stock</label>
-              <input type="number" value={stock} onChange={(e) => setStock(e.target.value)} className="w-full border p-2" required />
-            </div>
-          </>
-        )}
-      </div>
+    {/* Stock always visible */}
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-700">Stock</label>
+      <input
+        type="number"
+        value={stock}
+        onChange={(e) => setStock(e.target.value)}
+        className="w-full border p-2"
+        required
+      />
+    </div>
+  </div>
+)}
 
-      {/* Collection colors and sizes */}
+
+      {/* Collection Colors & Sizes */}
       {type === "collection" && (
         <div className="mb-6">
           <label className="block text-lg font-bold mb-2">Choose Colors</label>
@@ -641,7 +673,6 @@ onSave({
             {availableColors.map((color) => {
               const isSelected = selectedColors[color];
               const hasSizes = isSelected && Object.keys(isSelected.sizes || {}).length > 0;
-
               return (
                 <div key={color} className="p-3 border rounded-md">
                   <div className="flex items-center space-x-2 mb-2">
@@ -720,5 +751,6 @@ onSave({
     </form>
   );
 }
+
 
  

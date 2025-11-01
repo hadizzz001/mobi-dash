@@ -29,6 +29,8 @@ export async function POST(req) {
       views,
       orders,
       code,
+      sale,
+      noprice,
     } = body;
 
     console.log("body are: ", body);
@@ -60,6 +62,8 @@ export async function POST(req) {
         views,
         orders,
         code,
+              sale,
+      noprice,
       },
     });
 
@@ -101,7 +105,7 @@ export async function GET(req) {
 }
 
 
- 
+
 
 
 

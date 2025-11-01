@@ -22,9 +22,12 @@ export default function AddProduct() {
   const [productType, setProductType] = useState('single');
   const [selectedColors, setSelectedColors] = useState([]);
   const [colorQuantities, setColorQuantities] = useState({});
-  const [colorSizes, setColorSizes] = useState({}); 
+  const [colorSizes, setColorSizes] = useState({});
   const [discount, setDiscount] = useState('');
   const [code, setCode] = useState(''); // new code field
+  const [sale, setSale] = useState(false);
+  const [noPrice, setNoPrice] = useState(false);
+
 
 
 
@@ -168,14 +171,17 @@ export default function AddProduct() {
       title,
       code, // include in payload
       description,
-      price: Number(price).toFixed(2),
-    discount: discount
-  ? ((Number(price) * Number(discount)) / 100).toFixed(2)
-  : null,
 
-      img, 
-      sub: selectedsubCategory, 
-      factory: selectedFactory, 
+      sale: sale ? "yes" : "no",
+      noprice: noPrice ? "yes" : "no",
+      price: Number(price).toFixed(2),
+      discount: discount
+        ? ((Number(price) * Number(discount)) / 100).toFixed(2)
+        : null,
+
+      img,
+      sub: selectedsubCategory,
+      factory: selectedFactory,
       type: productType,
       ...(productType === 'single' && { stock }),
       ...(productType === 'collection' && {
@@ -253,7 +259,7 @@ export default function AddProduct() {
 
 
 
- 
+
 
 
 
@@ -271,13 +277,13 @@ export default function AddProduct() {
       />
 
       <input
-  type="text"
-  placeholder="Item Code"
-  value={code}
-  onChange={(e) => setCode(e.target.value)}
-  className="w-full border p-2 mb-4"
-  required
-/>
+        type="text"
+        placeholder="Item Code"
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        className="w-full border p-2 mb-4"
+        required
+      />
 
 
       {/* Category Selection */}
@@ -296,22 +302,8 @@ export default function AddProduct() {
         ))}
       </select> */}
 
-      <label className="block text-lg font-bold mb-2">Sub-Category</label>
-      <select
-        value={selectedsubCategory}
-        onChange={(e) => setSelectedsubCategory(e.target.value)}
-        className="w-full border p-2 mb-4"
-        required
-      >
-        <option value="" disabled>Select a Sub-Category</option>
-        {subcategoryOptions.map((category) => (
-          <option key={category.id} value={category.name}>
-            {category.name}
-          </option>
-        ))}
-      </select>
-      
-      <label className="block text-lg font-bold mb-2">Brand</label>
+
+            <label className="block text-lg font-bold mb-2">Brand</label>
       <select
         value={selectedFactory}
         onChange={(e) => setSelectedFactory(e.target.value)}
@@ -326,21 +318,38 @@ export default function AddProduct() {
         ))}
       </select>
 
+      <label className="block text-lg font-bold mb-2">Sub-Category</label>
+      <select
+        value={selectedsubCategory}
+        onChange={(e) => setSelectedsubCategory(e.target.value)}
+        className="w-full border p-2 mb-4"
+        required
+      >
+        <option value="" disabled>Select a Sub-Category</option>
+        {subcategoryOptions.map((category) => (
+          <option key={category.id} value={category.name}>
+            {category.name}
+          </option>
+        ))}
+      </select>
 
 
- 
 
 
 
 
 
 
-      
 
 
 
 
- 
+
+
+
+
+
+
       <div className="mb-4">
         <label className="block text-lg font-bold mb-2">Product Type</label>
         <div className="flex space-x-4">
@@ -365,42 +374,69 @@ export default function AddProduct() {
         </div>
       </div>
 
-      {/* Stock Input (only for 1 item) */}
-      {productType === 'single' && (
-        <>
-              <input
-        type="number"
-        step="0.01"
-        placeholder="Price"
-        value={price}
-        onChange={(e) => setPrice(e.target.value)}
-        className="w-full border p-2 mb-4"
-        required
-      /> 
+            <div className="flex gap-6 my-4">
 
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={sale}
+            onChange={(e) => setSale(e.target.checked)}
+          />
+          <span>Sale</span>
+        </label>
 
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={noPrice}
+            onChange={(e) => setNoPrice(e.target.checked)}
+          />
+          <span>No Price</span>
+        </label>
 
+      </div>
+      
 
-        <input
-  type="number"
-  step="0.01"
-  placeholder="Discounted"
-  value={discount}
-  onChange={(e) => setDiscount(e.target.value)}
-  className="w-full border p-2 mb-4"
-/>
-
+{/* Stock Input (only for 1 item) */}
+{productType === 'single' && (
+  <>
+    {/* Show Price and Discount only if noPrice is false */}
+    {!noPrice && (
+      <>
         <input
           type="number"
-          placeholder="Stock"
-          value={stock}
-          min={0}
-          onChange={(e) => setStock(e.target.value)}
+          step="0.01"
+          placeholder="Price"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
           className="w-full border p-2 mb-4"
           required
         />
-        </>
-      )}
+
+        <input
+          type="number"
+          step="0.01"
+          placeholder="Discounted"
+          value={discount}
+          onChange={(e) => setDiscount(e.target.value)}
+          className="w-full border p-2 mb-4"
+        />
+      </>
+    )}
+
+    {/* Stock should always show */}
+    <input
+      type="number"
+      placeholder="Stock"
+      value={stock}
+      min={0}
+      onChange={(e) => setStock(e.target.value)}
+      className="w-full border p-2 mb-4"
+      required
+    />
+  </>
+)}
+
 
       {/* Color Select with Qty Inputs (only for collection) */}
       {productType === 'collection' && (
@@ -602,6 +638,9 @@ export default function AddProduct() {
       />
 
       <Upload onFilesUpload={handleImgChange} />Max 12 images
+
+
+
 
 
       <br />
