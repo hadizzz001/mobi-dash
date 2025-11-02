@@ -502,7 +502,7 @@ onSave({
   description,
   price: Number(price).toFixed(2),
   discount: String(finalDiscountPrice),   // store discounted price
-  percentage: percentageValue,    // store percentage explicitly
+  percentage: String(percentageValue),    // store percentage explicitly
   img, 
   sub: selectedCategory1,
   factory: selectedCategory2,
