@@ -406,7 +406,7 @@ function EditProductForm({ product, onCancel, onSave }) {
   const [categories2, setCategories2] = useState([]);
   const [selectedCategory2, setSelectedCategory2] = useState(product.factory || "");
   const [discountPercentage, setDiscountPercentage] = useState(product.discount ? ((Number(product.price) - Number(product.discount)) / Number(product.price) * 100).toFixed(2) : '');
-
+const [tax, setIncludeTax] = useState(product.tax === "yes" ? true : false);
 
 
   const [sale, setSale] = useState(product.sale === "yes" ? true : false);
@@ -508,6 +508,7 @@ onSave({
   factory: selectedCategory2,
   type,
   sale: sale ? "yes" : "no",
+  tax: tax ? "yes" : "no",
   noprice: noPrice ? "yes" : "no",
   ...(type === 'single' && { stock }),
   ...(type === 'collection' && {
@@ -614,6 +615,10 @@ const calculatedDiscountPrice = discountPercentage && price
   <label className="flex items-center gap-2">
     <input type="checkbox" checked={noPrice} onChange={(e) => setNoPrice(e.target.checked)} />
     No Price
+  </label>
+  <label className="flex items-center gap-2">
+    <input type="checkbox" checked={tax} onChange={(e) => setIncludeTax(e.target.checked)} />
+    Include tax
   </label>
 </div>
 

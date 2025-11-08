@@ -28,6 +28,7 @@ export default function AddProduct() {
   const [sale, setSale] = useState(false);
   const [noPrice, setNoPrice] = useState(false);
   const [percentage, setPercentage] = useState(''); // new discount percentage
+const [includeTax, setIncludeTax] = useState(false);
 
 
 
@@ -178,6 +179,7 @@ const payload = {
   description,
   sale: sale ? "yes" : "no",
   noprice: noPrice ? "yes" : "no",
+  tax: includeTax ? "yes" : "no",
   price: Number(price).toFixed(2), // original price
   discount: discountValue, // store price after applying percentage
   img,
@@ -383,27 +385,37 @@ const calculatedDiscount = percentage && price
         </div>
       </div>
 
-            <div className="flex gap-6 my-4">
+<div className="flex gap-6 my-4">
 
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={sale}
-            onChange={(e) => setSale(e.target.checked)}
-          />
-          <span>Sale</span>
-        </label>
+  <label className="flex items-center gap-2 cursor-pointer">
+    <input
+      type="checkbox"
+      checked={sale}
+      onChange={(e) => setSale(e.target.checked)}
+    />
+    <span>Sale</span>
+  </label>
 
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={noPrice}
-            onChange={(e) => setNoPrice(e.target.checked)}
-          />
-          <span>No Price</span>
-        </label>
+  <label className="flex items-center gap-2 cursor-pointer">
+    <input
+      type="checkbox"
+      checked={noPrice}
+      onChange={(e) => setNoPrice(e.target.checked)}
+    />
+    <span>No Price</span>
+  </label>
 
-      </div>
+  {/* ✅ NEW Include Tax checkbox */}
+  <label className="flex items-center gap-2 cursor-pointer">
+    <input
+      type="checkbox"
+      checked={includeTax}
+      onChange={(e) => setIncludeTax(e.target.checked)}
+    />
+    <span>Include Tax</span>
+  </label>
+</div>
+
       
 
 {/* Stock Input (only for 1 item) */}

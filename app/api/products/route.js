@@ -32,6 +32,9 @@ export async function POST(req) {
       sale,
       noprice,
       percentage,
+      tax,
+      
+
 
     } = body;
 
@@ -67,6 +70,7 @@ export async function POST(req) {
               sale,
       noprice,
       percentage,
+      tax,
 
       },
     });

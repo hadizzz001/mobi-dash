@@ -28,6 +28,7 @@ model Product {
   color        Json?
   type         String
   arrival      String   @default("no")
+  tax      String   @default("no")
   cost         String?
   sub          String
   factory      String

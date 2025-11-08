@@ -30,6 +30,7 @@ export async function PATCH(request, { params }) {
             sale,
       noprice,
       percentage,
+      tax,
 
   } = await request.json();
 
@@ -65,6 +66,7 @@ export async function PATCH(request, { params }) {
             sale,
       noprice,
       percentage,
+      tax,
       },
     });
 
